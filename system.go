@@ -5,7 +5,8 @@ import (
 )
 
 type SystemState uint8
-const(
+
+const (
 	Created SystemState = iota
 	Started
 	Finishing
@@ -14,8 +15,8 @@ const(
 
 type System struct {
 	actorTypes []*ActorType
-	actors map[*ActorType][]*Actor
-	state SystemState
+	actors     map[*ActorType][]*Actor
+	state      SystemState
 }
 
 func NewSystem() *System {

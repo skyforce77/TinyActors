@@ -1,7 +1,7 @@
 package TinyActors
 
 type Message struct {
-	Value interface{}
+	Value   interface{}
 	Context map[string]interface{}
 }
 

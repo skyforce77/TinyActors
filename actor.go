@@ -2,8 +2,8 @@ package TinyActors
 
 type ActorType struct {
 	mailbox chan *Message
-	action func(*Message)
-	system *System
+	action  func(*Message)
+	system  *System
 }
 
 func (system *System) Declare(action func(*Message)) *ActorType {
