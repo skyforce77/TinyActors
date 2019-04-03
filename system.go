@@ -14,33 +14,33 @@ const (
 )
 
 type System struct {
-	actorTypes []*ActorType
-	actors     map[*ActorType][]*Actor
+	ActorModels []*ActorModel
+	actors     map[*ActorModel][]*Actor
 	state      SystemState
 }
 
 func NewSystem() *System {
 	return &System{
-		make([]*ActorType, 0),
-		make(map[*ActorType][]*Actor),
+		make([]*ActorModel, 0),
+		make(map[*ActorModel][]*Actor),
 		Created,
 	}
 }
 
-func (system *System) declare(typ *ActorType) {
-	system.actorTypes = append(system.actorTypes, typ)
+func (system *System) declare(typ *ActorModel) {
+	system.ActorModels = append(system.ActorModels, typ)
 }
 
-func (system *System) addActor(typ *ActorType) {
+func (system *System) addActor(typ *ActorModel) {
 	if system.actors[typ] == nil {
 		system.actors[typ] = make([]*Actor, 0)
 	}
 	actor := typ.instanciate()
 	system.actors[typ] = append(system.actors[typ], actor)
-	go actor.run()
+	go actor.run(actor)
 }
 
-func (system *System) dropActor(typ *ActorType) {
+func (system *System) dropActor(typ *ActorModel) {
 	if system.actors[typ] == nil || len(system.actors[typ]) < 1 {
 		return
 	}
@@ -50,7 +50,7 @@ func (system *System) dropActor(typ *ActorType) {
 
 func (system *System) monitor() {
 	for {
-		for _, typ := range system.actorTypes {
+		for _, typ := range system.ActorModels {
 			if len(typ.mailbox) > cap(typ.mailbox)/4 || len(typ.mailbox) > 0 && len(system.actors[typ]) == 0 {
 				system.addActor(typ)
 			} else if len(system.actors[typ]) > 1 && len(system.actors[typ]) > 1 {
@@ -78,14 +78,14 @@ func (system *System) monitor() {
 
 func (system *System) Start() {
 	system.state = Started
-	for _, typ := range system.actorTypes {
+	for _, typ := range system.ActorModels {
 		system.addActor(typ)
 	}
 	go system.monitor()
 }
 
 func (system *System) Stop() {
-	for _, typ := range system.actorTypes {
+	for _, typ := range system.ActorModels {
 		for _, act := range system.actors[typ] {
 			act.dropped = true
 		}
