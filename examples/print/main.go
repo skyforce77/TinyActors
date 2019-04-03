@@ -9,10 +9,10 @@ import (
 func main() {
 	system := ta.NewSystem()
 
-	actor2 := system.Declare(func(message *ta.Message) {
+	actor2 := system.Declare(func(self *Actor, message *ta.Message) {
 		fmt.Println(message.Value)
 	})
-	actor1 := system.Declare(func(message *ta.Message) {
+	actor1 := system.Declare(func(self *Actor, message *ta.Message) {
 		actor2.Forward(message)
 		time.Sleep(time.Second)
 	})

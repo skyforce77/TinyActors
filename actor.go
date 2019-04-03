@@ -1,12 +1,14 @@
 package TinyActors
 
+import "time"
+
 type ActorModel struct {
 	mailbox chan *Message
 	system  *System
 	run     func(actor *Actor)
 }
 
-func (system *System) Declare(action func(*Message)) *ActorModel {
+func (system *System) Declare(action func(*Actor, *Message)) *ActorModel {
 	typ := &ActorModel{
 		make(chan *Message, 500),
 		system,
@@ -14,7 +16,7 @@ func (system *System) Declare(action func(*Message)) *ActorModel {
 			for {
 				v, ok := <-actor.mailbox
 				if ok {
-					action(v)
+					action(actor, v)
 				}
 				if !ok || actor.dropped {
 					break
@@ -26,7 +28,9 @@ func (system *System) Declare(action func(*Message)) *ActorModel {
 	return typ
 }
 
-func (system *System) DeclareReducer(size int, action func([]*Message)) *ActorModel {
+func (system *System) DeclareReducer(size int, reduce func(*Actor, []*Message),
+	action func(*Actor, *Message)) *ActorModel {
+
 	typ := &ActorModel{
 		make(chan *Message, 500),
 		system,
@@ -34,15 +38,23 @@ func (system *System) DeclareReducer(size int, action func([]*Message)) *ActorMo
 			for {
 				buff := make([]*Message, size)
 				for i := 0; i < size; i++ {
-					v, ok := <-actor.mailbox
-					if ok {
-						buff[i] = v
-					}
-					if !ok || actor.dropped {
-						return
+					select {
+					case v, ok := <-actor.mailbox:
+						if ok {
+							buff[i] = v
+						}
+						if !ok || actor.dropped {
+							return
+						}
+					case <-time.After(100 * time.Millisecond):
+						for _, b := range buff {
+							if b != nil {
+								action(actor, b)
+							}
+						}
 					}
 				}
-				action(buff)
+				reduce(actor, buff)
 			}
 		},
 	}
