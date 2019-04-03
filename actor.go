@@ -47,7 +47,7 @@ func (system *System) DeclareReducer(size int, reduce func(*Actor, []*Message),
 							buff[i] = v
 						}
 						if !ok || actor.dropped {
-							return
+							buff = nil
 						}
 					case <-time.After(100 * time.Millisecond):
 						for _, b := range buff {
