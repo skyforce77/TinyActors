@@ -15,8 +15,8 @@ const (
 
 type System struct {
 	ActorModels []*ActorModel
-	actors     map[*ActorModel][]*Actor
-	state      SystemState
+	actors      map[*ActorModel][]*Actor
+	state       SystemState
 }
 
 func NewSystem() *System {

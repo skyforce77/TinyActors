@@ -3,7 +3,7 @@ package TinyActors
 type ActorModel struct {
 	mailbox chan *Message
 	system  *System
-	run func(actor *Actor)
+	run     func(actor *Actor)
 }
 
 func (system *System) Declare(action func(*Message)) *ActorModel {
@@ -33,7 +33,7 @@ func (system *System) DeclareReducer(size int, action func([]*Message)) *ActorMo
 		func(actor *Actor) {
 			for {
 				buff := make([]*Message, size)
-				for i:=0; i<size; i++ {
+				for i := 0; i < size; i++ {
 					v, ok := <-actor.mailbox
 					if ok {
 						buff[i] = v
