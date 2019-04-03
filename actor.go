@@ -1,7 +1,6 @@
 package TinyActors
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -51,7 +50,6 @@ func (system *System) DeclareReducer(size int, reduce func(*Actor, []*Message),
 						}
 					case <-time.After(100 * time.Millisecond):
 						for _, b := range buff {
-							fmt.Println(buff)
 							if b != nil {
 								action(actor, b)
 							}
