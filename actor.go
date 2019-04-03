@@ -1,6 +1,9 @@
 package TinyActors
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type ActorModel struct {
 	mailbox chan *Message
@@ -48,13 +51,17 @@ func (system *System) DeclareReducer(size int, reduce func(*Actor, []*Message),
 						}
 					case <-time.After(100 * time.Millisecond):
 						for _, b := range buff {
+							fmt.Println(buff)
 							if b != nil {
 								action(actor, b)
 							}
 						}
+						buff = nil
 					}
 				}
-				reduce(actor, buff)
+				if buff != nil {
+					reduce(actor, buff)
+				}
 			}
 		},
 	}

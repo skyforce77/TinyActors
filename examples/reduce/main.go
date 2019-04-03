@@ -9,16 +9,13 @@ import (
 func main() {
 	system := ta.NewSystem()
 
-	actor2 := system.DeclareReducer(2, func(self *ta.Actor, message []*ta.Message) {
+	actor1 := system.DeclareReducer(2, func(self *ta.Actor, message []*ta.Message) {
+		fmt.Println(message[0].Value.(int), message[1].Value.(int), message[0].Value.(int) + message[1].Value.(int))
 		self.Forward(message[0].New(
 			message[0].Value.(int) + message[1].Value.(int)),
 		)
-	}, func(message *ta.Message) {
+	}, func(self *ta.Actor, message *ta.Message) {
 		fmt.Println(message)
-	})
-	actor1 := system.Declare(func(message *ta.Message) {
-		actor2.Forward(message)
-		time.Sleep(time.Second)
 	})
 
 	system.Start()
@@ -27,5 +24,7 @@ func main() {
 		actor1.Tell(1)
 	}
 
-	system.Finish()
+	for{
+		time.Sleep(100000)
+	}
 }
