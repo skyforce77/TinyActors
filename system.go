@@ -14,7 +14,7 @@ const (
 )
 
 type System struct {
-	ActorModels []*ActorModel
+	actorModels []*ActorModel
 	actors      map[*ActorModel][]*Actor
 	state       SystemState
 }
@@ -28,7 +28,7 @@ func NewSystem() *System {
 }
 
 func (system *System) declare(typ *ActorModel) {
-	system.ActorModels = append(system.ActorModels, typ)
+	system.actorModels = append(system.actorModels, typ)
 }
 
 func (system *System) addActor(typ *ActorModel) {
@@ -50,7 +50,7 @@ func (system *System) dropActor(typ *ActorModel) {
 
 func (system *System) monitor() {
 	for {
-		for _, typ := range system.ActorModels {
+		for _, typ := range system.actorModels {
 			if len(typ.mailbox) > cap(typ.mailbox)/4 || len(typ.mailbox) > 0 && len(system.actors[typ]) == 0 {
 				system.addActor(typ)
 			} else if len(system.actors[typ]) > 1 && len(system.actors[typ]) > 1 {
@@ -78,14 +78,14 @@ func (system *System) monitor() {
 
 func (system *System) Start() {
 	system.state = Started
-	for _, typ := range system.ActorModels {
+	for _, typ := range system.actorModels {
 		system.addActor(typ)
 	}
 	go system.monitor()
 }
 
 func (system *System) Stop() {
-	for _, typ := range system.ActorModels {
+	for _, typ := range system.actorModels {
 		for _, act := range system.actors[typ] {
 			act.dropped = true
 		}
