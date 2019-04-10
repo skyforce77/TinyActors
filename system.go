@@ -1,6 +1,7 @@
 package TinyActors
 
 import (
+	"log"
 	"time"
 )
 
@@ -38,6 +39,7 @@ func (system *System) addActor(typ *ActorModel) {
 	actor := typ.instanciate()
 	system.actors[typ] = append(system.actors[typ], actor)
 	go actor.run(actor)
+	log.Println("Created actor", actor)
 }
 
 func (system *System) dropActor(typ *ActorModel) {
@@ -46,6 +48,7 @@ func (system *System) dropActor(typ *ActorModel) {
 	}
 	system.actors[typ][0].dropped = true
 	system.actors[typ] = system.actors[typ][1:]
+	log.Println("Dropped actor", system.actors[typ][0])
 }
 
 func (system *System) monitor() {

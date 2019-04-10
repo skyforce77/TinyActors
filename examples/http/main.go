@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	ta "github.com/skyforce77/TinyActors"
+	"net/http"
 	"time"
 )
 
@@ -19,9 +20,9 @@ func main() {
 
 	system.Start()
 
-	for i := 0; i < 500; i++ {
-		actor1.Tell(i)
-	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		msg := ta.NewMessage(w)
+	})
 
-	system.Finish()
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

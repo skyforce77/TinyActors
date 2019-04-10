@@ -12,7 +12,7 @@ func (message *Message) New(value interface{}) *Message {
 	}
 }
 
-func newMessage(value interface{}) *Message {
+func NewMessage(value interface{}) *Message {
 	return &Message{
 		value,
 		make(map[string]interface{}),

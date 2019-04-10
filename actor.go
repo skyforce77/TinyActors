@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+type State uint8
+const(
+	EndOfStream State = iota
+)
+
 type ActorModel struct {
 	mailbox chan *Message
 	system  *System
@@ -30,7 +35,7 @@ func (system *System) Declare(action func(*Actor, *Message)) *ActorModel {
 	return typ
 }
 
-func (system *System) DeclareReducer(size int, reduce func(*Actor, []*Message),
+func (system *System) DeclareReducer(timeout time.Duration, size int, reduce func(*Actor, []*Message),
 	action func(*Actor, *Message)) *ActorModel {
 
 	typ := &ActorModel{
@@ -39,19 +44,31 @@ func (system *System) DeclareReducer(size int, reduce func(*Actor, []*Message),
 		func(actor *Actor) {
 			for {
 				buff := make([]*Message, size)
+				if len(buff) != size {
+					panic("err")
+				}
 				for i := 0; i < size; i++ {
 					select {
 					case v, ok := <-actor.mailbox:
 						if ok {
-							buff[i] = v
+							if len(buff) != size {
+								actor.mailbox <- v
+							} else if buff != nil {
+								buff[i] = v
+							}
 						}
-						if !ok || actor.dropped {
-							buff = nil
-						}
-					case <-time.After(100 * time.Millisecond):
+					case <-time.After(timeout):
 						for _, b := range buff {
 							if b != nil {
-								action(actor, b)
+								if b.Context["_reduce"] == nil {
+									b.Context["_reduce"] = 1
+									actor.mailbox <- b
+								} else if b.Context["_reduce"].(int) < 2 {
+									b.Context["_reduce"] = b.Context["_reduce"].(int) + 1
+									actor.mailbox <- b
+								} else {
+									action(actor, b)
+								}
 							}
 						}
 						buff = nil
