@@ -89,7 +89,7 @@ func (typ *ActorModel) Forward(message *Message) {
 }
 
 func (typ *ActorModel) Tell(value interface{}) {
-	message := newMessage(value)
+	message := NewMessage(value)
 	typ.mailbox <- message
 }
 
