@@ -36,7 +36,7 @@ func (system *System) addActor(typ *ActorModel) {
 	if system.actors[typ] == nil {
 		system.actors[typ] = make([]*Actor, 0)
 	}
-	actor := typ.instanciate()
+	actor := typ.instantiate()
 	system.actors[typ] = append(system.actors[typ], actor)
 	go actor.run(actor)
 	log.Println("Created actor", actor)

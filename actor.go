@@ -1,6 +1,7 @@
 package TinyActors
 
 import (
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -8,6 +9,9 @@ type State uint8
 const(
 	EndOfStream State = iota
 )
+
+const MessageMetadataReduce = "_reduce"
+const MessageMetadataAnswer = "_answer"
 
 type ActorModel struct {
 	mailbox chan *Message
@@ -23,6 +27,7 @@ func (system *System) Declare(action func(*Actor, *Message)) *ActorModel {
 			for {
 				v, ok := <-actor.mailbox
 				if ok {
+					v.Receiver = actor
 					action(actor, v)
 				}
 				if !ok || actor.dropped {
@@ -60,11 +65,11 @@ func (system *System) DeclareReducer(timeout time.Duration, size int, reduce fun
 					case <-time.After(timeout):
 						for _, b := range buff {
 							if b != nil {
-								if b.Context["_reduce"] == nil {
-									b.Context["_reduce"] = 1
+								if b.Context[MessageMetadataReduce] == nil {
+									b.Context[MessageMetadataReduce] = 1
 									actor.mailbox <- b
-								} else if b.Context["_reduce"].(int) < 2 {
-									b.Context["_reduce"] = b.Context["_reduce"].(int) + 1
+								} else if b.Context[MessageMetadataReduce].(int) < 2 {
+									b.Context[MessageMetadataReduce] = b.Context[MessageMetadataReduce].(int) + 1
 									actor.mailbox <- b
 								} else {
 									action(actor, b)
@@ -84,16 +89,42 @@ func (system *System) DeclareReducer(timeout time.Duration, size int, reduce fun
 	return typ
 }
 
+func (typ *ActorModel) Tell(message *Message) {
+	message.Sender = message.Receiver
+	typ.mailbox <- message
+}
+
 func (typ *ActorModel) Forward(message *Message) {
 	typ.mailbox <- message
 }
 
-func (typ *ActorModel) Tell(value interface{}) {
-	message := NewMessage(value)
+func (typ *ActorModel) SimpleAsk(message *Message) chan *Message {
+	answerChan := make(chan *Message)
+	message.Context[MessageMetadataAnswer] = answerChan
 	typ.mailbox <- message
+	return answerChan
 }
 
-func (typ *ActorModel) instanciate() *Actor {
+func (typ *ActorModel) Ask(message *Message, timeout time.Duration) (*Message, error) {
+	answerChan := typ.SimpleAsk(message)
+
+	select {
+	case res := <-answerChan:
+		return res, nil
+	case <-time.After(timeout):
+		return nil, errors.New("timed out")
+	}
+}
+
+func (typ *ActorModel) Push(value interface{}) {
+	typ.Tell(NewMessage(value))
+}
+
+func (typ *ActorModel) PushAsk(value interface{}, timeout time.Duration) (*Message, error) {
+	return typ.Ask(NewMessage(value), timeout)
+}
+
+func (typ *ActorModel) instantiate() *Actor {
 	return &Actor{
 		typ,
 		false,
