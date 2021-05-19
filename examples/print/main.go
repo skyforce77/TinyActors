@@ -20,7 +20,7 @@ func main() {
 	system.Start()
 
 	for i := 0; i < 500; i++ {
-		actor1.Tell(i)
+		actor1.Push(i)
 	}
 
 	system.Finish()

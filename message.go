@@ -1,9 +1,9 @@
 package TinyActors
 
 type Message struct {
-	Value   interface{}
-	Context map[string]interface{}
-	Sender  *Actor
+	Value    interface{}
+	Context  map[string]interface{}
+	Sender   *Actor
 	Receiver *Actor
 }
 

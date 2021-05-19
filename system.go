@@ -46,9 +46,10 @@ func (system *System) dropActor(typ *ActorModel) {
 	if system.actors[typ] == nil || len(system.actors[typ]) < 1 {
 		return
 	}
-	system.actors[typ][0].dropped = true
+	act := system.actors[typ][0]
+	act.dropped = true
 	system.actors[typ] = system.actors[typ][1:]
-	log.Println("Dropped actor", system.actors[typ][0])
+	log.Println("Dropped actor", act)
 }
 
 func (system *System) monitor() {

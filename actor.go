@@ -6,7 +6,8 @@ import (
 )
 
 type State uint8
-const(
+
+const (
 	EndOfStream State = iota
 )
 

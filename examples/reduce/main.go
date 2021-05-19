@@ -24,7 +24,7 @@ func main() {
 	system.Start()
 
 	for i := 0; i < 500; i++ {
-		actor1.Tell(1)
+		actor1.Push(1)
 		time.Sleep(10 * time.Millisecond)
 	}
 

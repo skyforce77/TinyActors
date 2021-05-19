@@ -6,22 +6,27 @@ import (
 	"time"
 )
 
+type AddJob struct {
+	a int
+	b int
+}
+
 func main() {
 	system := ta.NewSystem()
 
-	actor2 := system.Declare(func(self *ta.Actor, message *ta.Message) {
-		fmt.Println(message.Value)
-	})
 	actor1 := system.Declare(func(self *ta.Actor, message *ta.Message) {
-		actor2.Forward(message)
-		time.Sleep(time.Second)
+		if add, ok := message.Value.(AddJob); ok {
+			message.Answer(ta.NewMessage(add.a + add.b))
+		}
 	})
 
 	system.Start()
+	defer system.Finish()
 
-	for i := 0; i < 500; i++ {
-		actor1.Push(i)
+	result, err := actor1.PushAsk(AddJob{10, 5}, 10*time.Second)
+	if err != nil {
+		panic(err)
 	}
 
-	system.Finish()
+	fmt.Printf("Result: %d", result.Value.(int))
 }
