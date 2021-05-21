@@ -99,15 +99,14 @@ func (typ *ActorModel) Forward(message *Message) {
 	typ.mailbox <- message
 }
 
-func (typ *ActorModel) SimpleAsk(message *Message) chan *Message {
-	answerChan := make(chan *Message)
+func (typ *ActorModel) SimpleAsk(message *Message, answerChan chan *Message) {
 	message.Context[MessageMetadataAnswer] = answerChan
 	typ.mailbox <- message
-	return answerChan
 }
 
 func (typ *ActorModel) Ask(message *Message, timeout time.Duration) (*Message, error) {
-	answerChan := typ.SimpleAsk(message)
+	answerChan := make(chan *Message)
+	typ.SimpleAsk(message, answerChan)
 
 	select {
 	case res := <-answerChan:
